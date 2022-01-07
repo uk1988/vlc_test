@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vlc-test
+  labels:
+    app: vlc-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vlc-test
+  template:
+    metadata:
+      labels:
+        app: vlc-test
+    spec:
+      containers:
+      - name: vlc-test
+        image: galexrt/vlc:latest
+        command:
+        - cvlc
+        - "rtsp://root:avibit2005@10.1.7.223/axis-media/media.amp?videocodec=h264"
+        #- "http://root:avibit2005@10.1.7.223/mjpg/video.mjpg"
+        - "--sout"
+        - "#http{mux=ffmpeg{mux=flv},dst=:8080/}"
+        - "--demux=mjpeg"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vlc-test
+  labels:
+    app: vlc-test
+spec:
+  selector:
+    app: vlc-test
+  ports:
+    - name: vlc-test
+      port: 8080
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: ca-issuer
+  labels:
+    app: vlc-test
+  name: vlc-test
+spec:
+  rules:
+  - host: vlc.10.1.4.227.nip.io
+    http:
+      paths:
+      - backend:
+          serviceName: vlc-test
+          servicePort: 8080
+        path: /
+  #tls:
+  #  - hosts:
+  #    - vlc.10.1.4.227.nip.io
+  #   secretName: vlc-ssl-certificate

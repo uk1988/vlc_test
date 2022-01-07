@@ -1,0 +1,12 @@
+
+#run local stream server with duplicate in HMI:
+vlc rtsp://root:avibit2005@10.1.7.223/axis-media/media.amp?videocodec=h264 --sout #duplicate{dst=http{mux=ffmpeg{mux=flv},dst=:8080/},dst=display} --no-sout-all --sout-keep
+vlc rtsp://root:avibit2005@10.1.7.223/axis-media/media.amp?videocodec=jpeg --sout #duplicate{dst=http{mux=ffmpeg{mux=flv},dst=:8080/},dst=display}
+
+#run local stream server no duplicate:
+vlc -Idummy rtsp://root:avibit2005@10.1.7.223/axis-media/media.amp?videocodec=h264 --sout #http{mux=ffmpeg{mux=flv},dst=:8080/} --no-sout-all --sout-keep
+
+#run vlc in docker as http stream 
+docker run -d -p 8080:8080 quay.io/galexrt/vlc:latest -Idummy rtsp://root:avibit2005@10.1.7.223/axis-media/media.amp?videocodec=h264 --sout "#http{mux=ffmpeg{mux=flv},dst=:8080/}"
+
+docker ps -all
